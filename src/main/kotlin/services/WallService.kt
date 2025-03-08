@@ -20,11 +20,12 @@ object WallService {
     fun update(post: Post): Boolean {
         for ((index, existingPost) in posts.withIndex()) {
             if (existingPost.id == post.id) {
-                posts[index] = post.copy(
-                    likes = post.likes.copy(),
-                    reposts = post.reposts.copy()
+                posts[index] = existingPost.copy(
+                    text = post.text ?: existingPost.text,
+                    comments = post.comments ?: existingPost.comments,
+                    views = post.views ?: existingPost.views,
+                    postType = post.postType ?: existingPost.postType
                 )
-
                 return true
             }
         }

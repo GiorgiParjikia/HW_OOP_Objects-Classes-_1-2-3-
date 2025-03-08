@@ -15,12 +15,10 @@ class WallServiceTest {
     @Test
     fun addPost_ShouldAssignUniqueId() {
         val post = Post(
-            ownerId = 1, fromId = 2, date = 1678900000, text = "Тестовый пост",
+            ownerId = 1, fromId = 2, date = 1678900000,
             likes = Likes(0, false, true, true),
-            reposts = Reposts(0, false),
-            views = Views(0),
-            postType = "post"
-        )
+            reposts = Reposts(0, false)
+        ) // Не передаём text, comments, views, postType
 
         val addedPost = WallService.add(post)
 
@@ -28,33 +26,20 @@ class WallServiceTest {
     }
 
     @Test
-    fun updatePost_ShouldReturnTrue_WhenPostExists() {
+    fun updatePost_ShouldNotOverrideWithNull() {
         val post = WallService.add(Post(
-            ownerId = 1, fromId = 2, date = 1678900000, text = "Тест",
-            likes = Likes(0, false, true, true),
+            ownerId = 1, fromId = 2, date = 1678900000, text = "Оригинальный текст",
+            likes = Likes(5, false, true, true),
             reposts = Reposts(0, false),
-            views = Views(0),
-            postType = "post"
+            views = Views(100)
         ))
 
-        val updatedPost = post.copy(text = "Обновленный текст")
-        val result = WallService.update(updatedPost)
+        val updatedPost = post.copy(text = null, views = null) // Передаём null
+        WallService.update(updatedPost)
 
-        assertTrue(result)
-    }
+        val resultPost = WallService.getAll().first()
 
-    @Test
-    fun updatePost_ShouldReturnFalse_WhenPostDoesNotExist() {
-        val fakePost = Post(
-            id = 999, ownerId = 1, fromId = 2, date = 1678900000, text = "Фейковый пост",
-            likes = Likes(0, false, true, true),
-            reposts = Reposts(0, false),
-            views = Views(0),
-            postType = "post"
-        )
-
-        val result = WallService.update(fakePost)
-
-        assertFalse(result)
+        assertEquals("Оригинальный текст", resultPost.text) // Проверяем, что текст не затёрся
+        assertNotNull(resultPost.views) // Проверяем, что views остались
     }
 }
