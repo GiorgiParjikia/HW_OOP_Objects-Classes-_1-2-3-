@@ -1,18 +1,23 @@
 package ru.netology.services
 
 import ru.netology.models.Post
+import ru.netology.models.Comment
 
 object WallService {
     private var posts = mutableListOf<Post>()
-    private var nextId = 1
+    private var comments = mutableListOf<Comment>()
+    private var nextPostId = 1
+    private var nextCommentId = 1
 
     fun clear() {
         posts.clear()
-        nextId = 1
+        comments.clear()
+        nextPostId = 1
+        nextCommentId = 1
     }
 
     fun add(post: Post): Post {
-        val newPost = post.copy(id = nextId++)
+        val newPost = post.copy(id = nextPostId++)
         posts.add(newPost)
         return newPost
     }
@@ -30,6 +35,15 @@ object WallService {
             }
         }
         return false
+    }
+
+    fun createComment(postId: Int, comment: Comment): Comment {
+        val post = posts.find { it.id == postId }
+            ?: throw PostNotFoundException("Post with ID $postId not found")
+
+        val newComment = comment.copy(id = nextCommentId++, postId = postId)
+        comments.add(newComment)
+        return newComment
     }
 
     fun getAll(): List<Post> = posts
