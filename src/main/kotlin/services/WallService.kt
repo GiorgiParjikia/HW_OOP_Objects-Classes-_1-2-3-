@@ -2,17 +2,19 @@ package ru.netology.services
 
 import ru.netology.models.Post
 import ru.netology.models.Comment
-
+import ru.netology.models.*
 
 object WallService {
     private var posts = mutableListOf<Post>()
     private var comments = mutableListOf<Comment>()
+    private var reports = mutableListOf<Report>()
     private var nextPostId = 1
     private var nextCommentId = 1
 
     fun clear() {
         posts.clear()
         comments.clear()
+        reports.clear()
         nextPostId = 1
         nextCommentId = 1
     }
@@ -45,6 +47,17 @@ object WallService {
         val newComment = comment.copy(id = nextCommentId++, postId = postId)
         comments.add(newComment)
         return newComment
+    }
+
+    fun reportComment(commentId: Int, ownerId: Int, reason: Int) {
+        val comment = comments.find { it.id == commentId }
+            ?: throw CommentNotFoundException("Comment with ID $commentId not found")
+
+        if (reason !in 0..8) {
+            throw InvalidReportReasonException("Invalid report reason: $reason")
+        }
+
+        reports.add(Report(commentId, ownerId, reason))
     }
 
     fun getAll(): List<Post> = posts

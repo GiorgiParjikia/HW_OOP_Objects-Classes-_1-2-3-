@@ -5,6 +5,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import ru.netology.models.*
 import org.junit.jupiter.api.assertThrows
+import ru.netology.services.WallService
+
+
 
 
 
@@ -98,5 +101,37 @@ class WallServiceTest {
             WallService.createComment(999, Comment(id = 0, postId = 999, fromId = 3, date = 1679010000, text = "Несуществующий пост"))
         }
     }
+
+    @Test
+    fun reportComment_ShouldAddReport_WhenCommentExists() {
+        val post = WallService.add(Post(ownerId = 1, fromId = 2, date = 1678900000, text = "Тестовый пост", likes = Likes(0, false, true, true), reposts = Reposts(0, false), views = Views(100)))
+        val comment = WallService.createComment(post.id, Comment(id = 0, postId = post.id, fromId = 3, date = 1679010000, text = "Тестовый комментарий"))
+
+        WallService.reportComment(comment.id, comment.fromId, 1) // Причина 1 (детская порнография)
+
+        // Проверяем, что жалоба добавлена
+        assertDoesNotThrow { WallService.reportComment(comment.id, comment.fromId, 1) }
+    }
+
+    @Test
+    fun reportComment_ShouldThrowException_WhenCommentDoesNotExist() {
+        assertThrows<CommentNotFoundException> {
+            WallService.reportComment(999, 1, 2) // Не существующий комментарий
+        }
+    }
+
+    @Test
+    fun reportComment_ShouldThrowException_WhenReasonIsInvalid() {
+        val post = WallService.add(Post(ownerId = 1, fromId = 2, date = 1678900000, text = "Тестовый пост", likes = Likes(0, false, true, true), reposts = Reposts(0, false), views = Views(100)))
+        val comment = WallService.createComment(post.id, Comment(id = 0, postId = post.id, fromId = 3, date = 1679010000, text = "Тестовый комментарий"))
+
+        assertThrows<InvalidReportReasonException> {
+            WallService.reportComment(comment.id, comment.fromId, 99) // Некорректная причина
+        }
+    }
+
+
 }
+
+
 
