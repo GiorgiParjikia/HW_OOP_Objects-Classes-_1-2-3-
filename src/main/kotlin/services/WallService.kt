@@ -3,6 +3,7 @@ package ru.netology.services
 import ru.netology.models.Post
 import ru.netology.models.Comment
 
+
 object WallService {
     private var posts = mutableListOf<Post>()
     private var comments = mutableListOf<Comment>()

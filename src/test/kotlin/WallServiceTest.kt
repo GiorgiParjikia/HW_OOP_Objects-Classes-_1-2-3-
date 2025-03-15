@@ -4,6 +4,11 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import ru.netology.models.*
+import org.junit.jupiter.api.assertThrows
+
+
+
+
 
 class WallServiceTest {
 
@@ -73,4 +78,25 @@ class WallServiceTest {
         assertEquals("Оригинальный текст", resultPost.text) // Проверяем, что текст не затёрся
         assertNotNull(resultPost.views) // Проверяем, что views остались
     }
+
+    @Test
+    fun createComment_ShouldAddComment_WhenPostExists() {
+        // Создаем пост
+        val post = WallService.add(Post(ownerId = 1, fromId = 2, date = 1678900000, text = "Тестовый пост", likes = Likes(0, false, true, true), reposts = Reposts(0, false), views = Views(100)))
+
+        // Добавляем комментарий к существующему посту
+        val comment = WallService.createComment(post.id, Comment(id = 0, postId = post.id, fromId = 3, date = 1679010000, text = "Первый комментарий"))
+
+        // Проверяем, что комментарий добавился и id не равен 0
+        assertTrue(comment.id > 0)
+        assertEquals(post.id, comment.postId)
+    }
+
+    @Test
+    fun createComment_ShouldThrowException_WhenPostDoesNotExist() {
+        assertThrows<PostNotFoundException> {
+            WallService.createComment(999, Comment(id = 0, postId = 999, fromId = 3, date = 1679010000, text = "Несуществующий пост"))
+        }
+    }
 }
+
