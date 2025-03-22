@@ -8,11 +8,6 @@ import org.junit.jupiter.api.assertThrows
 import ru.netology.services.WallService
 
 
-
-
-
-
-
 class WallServiceTest {
 
     @BeforeEach
