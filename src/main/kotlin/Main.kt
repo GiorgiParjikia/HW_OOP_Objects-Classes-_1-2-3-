@@ -1,42 +1,49 @@
 package ru.netology
 
-import ru.netology.models.*
-import ru.netology.services.WallService
-import ru.netology.services.PostNotFoundException
+import ru.netology.services.ChatService
 
 fun main() {
-    println("\n=== Тестируем комментарии ===")
+    println("=== ChatService Demo ===")
 
-    // Добавляем пост
-    val post = WallService.add(
-        Post(
-            ownerId = 1,
-            fromId = 2,
-            date = 1678900000,
-            text = "Тестовый пост",
-            likes = Likes(0, false, true, true),  // Добавляем likes
-            reposts = Reposts(0, false)          // Добавляем reposts
-        )
-    )
+    // Очищаем данные (на случай повторного запуска)
+    ChatService.clear()
 
-    try {
-        // Добавляем комментарий к существующему посту
-        val comment = WallService.createComment(
-            postId = post.id,
-            comment = Comment(id = 0, postId = post.id, fromId = 3, date = 1679010000, text = "Первый комментарий")
-        )
-        println("Комментарий добавлен: $comment")
-    } catch (e: PostNotFoundException) {
-        println("Ошибка: ${e.message}")
+    // Пользователь 1 пишет пользователю 2
+    ChatService.sendMessage(senderId = 1, receiverId = 2, text = "Привет!")
+    ChatService.sendMessage(senderId = 1, receiverId = 2, text = "Как дела?")
+
+    // Пользователь 2 отвечает
+    ChatService.sendMessage(senderId = 2, receiverId = 1, text = "Привет, всё хорошо!")
+
+    // Получаем список всех чатов
+    val chats = ChatService.getChats()
+    println("Чаты: ${chats.map { it.userId }}")
+
+    // Проверим, сколько чатов содержит непрочитанные сообщения для userId = 2
+    val unreadCount = ChatService.getUnreadChatsCount(userId = 2)
+    println("Непрочитанных чатов для пользователя 2: $unreadCount")
+
+    // Получаем последние сообщения из каждого чата
+    val lastMessages = ChatService.getLastMessages()
+    println("Последние сообщения: $lastMessages")
+
+    // Получаем 10 последних сообщений из чата с userId = 2
+    val messages = ChatService.getMessagesFromChat(userId = 2, count = 10)
+    println("Сообщения в чате с пользователем 2:")
+    messages.forEach { println("- ${it.text} (прочитано: ${it.read})") }
+
+    // Редактируем сообщение
+    val firstMessageId = messages.firstOrNull()?.id
+    if (firstMessageId != null) {
+        val edited = ChatService.editMessage(messageId = firstMessageId, newText = "Привет, друг!")
+        println("Сообщение отредактировано: $edited")
     }
 
-    try {
-        // Пытаемся добавить комментарий к несуществующему посту
-        WallService.createComment(
-            postId = 999,  // Не существующий ID
-            comment = Comment(id = 0, postId = 999, fromId = 3, date = 1679010000, text = "Несуществующий пост")
-        )
-    } catch (e: PostNotFoundException) {
-        println("Ошибка: ${e.message}")
-    }
+    // Удаляем одно из сообщений
+    val deleted = firstMessageId?.let { ChatService.deleteMessage(it) } ?: false
+    println("Сообщение удалено: $deleted")
+
+    // Удаляем весь чат
+    val chatDeleted = ChatService.deleteChat(userId = 2)
+    println("Чат с пользователем 2 удалён: $chatDeleted")
 }
